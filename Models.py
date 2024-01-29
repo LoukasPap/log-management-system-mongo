@@ -35,19 +35,71 @@ class AccessLog(BaseModel):
 
 
 class ReplicateLog(BaseModel):
+    # General log fields
     log_id: str
+    timestamp: datetime
+    ip: str
+    log_type: str = Field(default="replicate")
+
+    # Replicate specific fields
+    block_ids: list
+    size: int
+    destination_ip: str
+
+    # Admin fields
+    votes: int
+    voted_by: list
 
 
 class ServeLog(BaseModel):
+    # General log fields
     log_id: str
+    timestamp: datetime
+    ip: str
+    log_type: str = Field(default="serve")
+
+    # Replicate specific fields
+    block_ids: list
+    size: int
+    destination_ip: str
+
+    # Admin fields
+    votes: int
+    voted_by: list
 
 
 class ReceivedLog(BaseModel):
+    # General log fields
     log_id: str
+    timestamp: datetime
+    ip: str
+    log_type: str = Field(default="received")
+
+    # Replicate specific fields
+    block_ids: list
+    size: int
+    destination_ip: str
+
+    # Admin fields
+    votes: int
+    voted_by: list
 
 
 class ReceivingLog(BaseModel):
+    # General log fields
     log_id: str
+    timestamp: datetime
+    ip: str
+    log_type: str = Field(default="receiving")
+
+    # Replicate specific fields
+    block_ids: list
+    size: int
+    destination_ip: str
+
+    # Admin fields
+    votes: int
+    voted_by: list
 
 
 class Date(BaseModel):
@@ -67,3 +119,8 @@ class Date(BaseModel):
 
     receiving_logs: list[ReceivingLog]
     receiving_log_count: int
+
+
+class Referer(BaseModel):
+    referer: str
+    resources: list[str]
