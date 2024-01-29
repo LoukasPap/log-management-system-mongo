@@ -38,10 +38,10 @@ async def insert_log(log):
                                              {'$push': {'replicate_logs': log},
                                               '$inc': {'replicate_log_count': 1}},
                                              upsert=True)
-    elif log.log_type == "serve":
+    elif log.log_type == "served":
         result = await collection.update_one({'_id': log.date.date()},
-                                             {'$push': {'serve_logs': log},
-                                              '$inc': {'serve_log_count': 1}},
+                                             {'$push': {'served_logs': log},
+                                              '$inc': {'served_log_count': 1}},
                                              upsert=True)
 
     print('matched %d, modified %d' %

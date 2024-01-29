@@ -51,12 +51,12 @@ class ReplicateLog(BaseModel):
     voted_by: list
 
 
-class ServeLog(BaseModel):
+class ServedLog(BaseModel):
     # General log fields
     log_id: str
     timestamp: datetime
     ip: str
-    log_type: str = Field(default="serve")
+    log_type: str = Field(default="served")
 
     # Replicate specific fields
     block_ids: list
@@ -111,8 +111,8 @@ class Date(BaseModel):
     replicate_logs: list[ReplicateLog]
     replicate_log_count: int
 
-    serve_logs: list[ServeLog]
-    serve_log_count: int
+    served_logs: list[ServedLog]
+    served_log_count: int
 
     received_logs: list[ReceivedLog]
     received_log_count: int
