@@ -15,7 +15,6 @@ class Admin(BaseModel):
 
 class AccessLog(BaseModel):
     # General log fields
-    log_id: str
     timestamp: datetime
     ip: str
     log_type: str = Field(default="access")
@@ -36,7 +35,6 @@ class AccessLog(BaseModel):
 
 class ReplicateLog(BaseModel):
     # General log fields
-    log_id: str
     timestamp: datetime
     ip: str
     log_type: str = Field(default="replicate")
@@ -53,7 +51,6 @@ class ReplicateLog(BaseModel):
 
 class ServedLog(BaseModel):
     # General log fields
-    log_id: str
     timestamp: datetime
     ip: str
     log_type: str = Field(default="served")
@@ -70,7 +67,6 @@ class ServedLog(BaseModel):
 
 class ReceivedLog(BaseModel):
     # General log fields
-    log_id: str
     timestamp: datetime
     ip: str
     log_type: str = Field(default="received")
@@ -87,7 +83,6 @@ class ReceivedLog(BaseModel):
 
 class ReceivingLog(BaseModel):
     # General log fields
-    log_id: str
     timestamp: datetime
     ip: str
     log_type: str = Field(default="receiving")
