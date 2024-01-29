@@ -1,4 +1,4 @@
-from models import Admin
+from Models import Admin
 from database import (
     fetch_one_admin,
     create_admin
