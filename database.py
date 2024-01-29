@@ -18,21 +18,30 @@ async def create_admin(admin):
 
 async def insert_log(log):
     result = ""
-    if log.log_type == "Access":
-        result = await collection.update_one({'date': log.date},
-                                             {'$push': {'AccessLogs': log}},
+    if log.log_type == "access":
+        result = await collection.update_one({'_id': log.date.date()},
+                                             {'$push': {'access_logs': log},
+                                              '$inc': {'access_log_count': 1}},
                                              upsert=True)
-    elif log.log_type == "Receive":
-        result = await collection.update_one({'date': log.date},
-                                             {'$push': {'ReceiveLogs': log}},
+    elif log.log_type == "received":
+        result = await collection.update_one({'_id': log.date.date()},
+                                             {'$push': {'received_logs': log},
+                                              '$inc': {'received_log_count': 1}},
                                              upsert=True)
-    elif log.log_type == "Replicate":
-        result = await collection.update_one({'date': log.date},
-                                             {'$push': {'ReplicateLogs': log}},
+    elif log.log_type == "receiving":
+        result = await collection.update_one({'_id': log.date.date()},
+                                             {'$push': {'receiving_logs': log},
+                                              '$inc': {'receiving_log_count': 1}},
                                              upsert=True)
-    elif log.log_type == "Serve":
-        result = await collection.update_one({'date': log.date},
-                                             {'$push': {'ServeLogs': log}},
+    elif log.log_type == "replicate":
+        result = await collection.update_one({'_id': log.date.date()},
+                                             {'$push': {'replicate_logs': log},
+                                              '$inc': {'replicate_log_count': 1}},
+                                             upsert=True)
+    elif log.log_type == "serve":
+        result = await collection.update_one({'_id': log.date.date()},
+                                             {'$push': {'serve_logs': log},
+                                              '$inc': {'serve_log_count': 1}},
                                              upsert=True)
 
     print('matched %d, modified %d' %

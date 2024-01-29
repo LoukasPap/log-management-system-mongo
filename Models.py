@@ -6,7 +6,6 @@ from pydantic import BaseModel, Field
 
 class Admin(BaseModel):
     username: str
-    age: int
     email: str
     telephone: str
     votes_count: int
@@ -14,20 +13,12 @@ class Admin(BaseModel):
     voted_ips: set
 
 
-class Date(BaseModel):
-    date: datetime
-    AccessLogs: list
-    ReplicateLogs: list
-    ServeLogs: list
-    ReceiveLogs: list
-
-
 class AccessLog(BaseModel):
     # General log fields
-    logID: str
-    date: datetime
+    log_id: str
+    timestamp: datetime
     ip: str
-    log_type: str = Field(default="Access")
+    log_type: str = Field(default="access")
 
     # Access specific fields
     http_method: str
@@ -35,6 +26,8 @@ class AccessLog(BaseModel):
     http_response_size: int
     remote_name: str
     user_agent_string: str
+    referer: str
+    resource: str
 
     # Admin fields
     votes: int
@@ -42,13 +35,35 @@ class AccessLog(BaseModel):
 
 
 class ReplicateLog(BaseModel):
-    logID: str
+    log_id: str
 
 
 class ServeLog(BaseModel):
-    logID: str
+    log_id: str
 
 
-class ReceiveLog(BaseModel):
-    logID: str
+class ReceivedLog(BaseModel):
+    log_id: str
 
+
+class ReceivingLog(BaseModel):
+    log_id: str
+
+
+class Date(BaseModel):
+    _id: datetime
+
+    access_logs: list[AccessLog]
+    access_log_count: int
+
+    replicate_logs: list[ReplicateLog]
+    replicate_log_count: int
+
+    serve_logs: list[ServeLog]
+    serve_log_count: int
+
+    received_logs: list[ReceivedLog]
+    received_log_count: int
+
+    receiving_logs: list[ReceivingLog]
+    receiving_log_count: int
