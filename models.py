@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import Union
-
 from pydantic import BaseModel, Field
 
 
@@ -14,7 +13,7 @@ class Admin(BaseModel):
 
 
 class AccessLog(BaseModel):
-    # General log fields
+    # General fields
     timestamp: datetime
     ip: str
     log_type: str = Field(default="access")
@@ -35,14 +34,15 @@ class AccessLog(BaseModel):
 
 
 class HadoopFSLog(BaseModel):
-    # General log fields
+    # General fields
     timestamp: datetime
     ip: str
     log_type: str
 
-    # Replicate specific fields
+    # HDFS specific fields
     block_ids: list[str]
     destination_ip: list[str]
+    size: int = Field(default=0)
 
     # Admin fields
     votes: int

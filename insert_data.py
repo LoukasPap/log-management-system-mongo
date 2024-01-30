@@ -6,8 +6,8 @@ from pymongo import MongoClient
 
 client = MongoClient("localhost", 27017)
 db = client["NoSQL-LOGS"]
-collection_access = db["access"]
-collection_hdfs = db["hdfs"]
+collection_access = db["access_logs"]
+collection_hdfs = db["hdfs_logs"]
 collection_ref = db["referers"]
 
 date_format_input = "%y%m%d %H%M%S"
@@ -20,7 +20,8 @@ fsnamesystem_logs: str = "./logs/hdfs_fsnamesystem.csv"
 
 def main():
     # insert_access()
-    insert_hdfs()
+    insert_hdfs(fsnamesystem_logs, False)
+    # insert_hdfs(datacxeiver_logs, True)
 
 
 def insert_access():
@@ -46,24 +47,31 @@ def insert_access():
             )
             insert_a_log(dict(log_object))
 
+    print('Inserted access logs')
 
-def insert_hdfs():
-    log_object: ReplicateLog
 
-    with open(fsnamesystem_logs, "r", newline="") as csvfile:
+def insert_hdfs(log_path: str, is_dataxceiver: bool):
+    log_object: HadoopFSLog
+
+    with open(log_path, "r", newline="") as csvfile:
         reader = csv.reader(csvfile, delimiter=",")
         next(reader, None)
         for row in reader:
-            log_object = ReplicateLog(
+            log_object = HadoopFSLog(
                 timestamp=datetime.strptime(row[0], date_format_input),
+                log_type=row[1],
                 block_ids=row[2].split(),
                 ip=row[3],
                 destination_ip=row[4].split(),
                 votes=0,
                 voted_by=[]
             )
+            if is_dataxceiver:
+                log_object.size = int(row[-1])
 
             insert_a_log(dict(log_object), False)
+
+    print('Inserted hdfs logs')
 
 
 def convert_to_datehour(timestamp: str) -> str:
