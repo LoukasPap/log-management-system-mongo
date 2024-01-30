@@ -1,7 +1,13 @@
 import csv
-
-from database import client, insert_a_log
 from models import *
+
+# PyMongo Client
+from pymongo import MongoClient
+
+client = MongoClient("localhost", 27017)
+db = client["NoSQL-LOGS"]
+collection_dt = db["dates"]
+collection_ref = db["referers"]
 
 date_format_input = "%y%m%d %H%M%S"
 date_format_output = "%y%m%d%H"
@@ -17,7 +23,6 @@ def main():
 
 def insert_access():
     access_log: AccessLog
-    loop = client.get_io_loop()
 
     with open(access_logs, "r", newline="") as csvfile:
         reader = csv.reader(csvfile, delimiter=",")
@@ -54,6 +59,36 @@ def insert_access():
 def convert_to_datehour(timestmp: str) -> str:
     datetime_object = datetime.strptime(timestmp, date_format_input)
     return datetime_object.strftime(date_format_output)
+
+
+def insert_a_log(log):
+    if log["log_type"] == "access":
+
+        if log["resource"] is not None:
+            resource = log["resource"].replace(".", "_")
+
+        result = collection_ref.update_one(
+            filter={'referer': log["referer"]},
+            update={
+                "$inc": {("resources."+resource): 1}
+            },
+            upsert=True,
+        )
+
+    timestamp: datetime = log["timestamp"]
+    result = collection_dt.update_one(
+        {"_id": datetime(year=timestamp.year,
+                         month=timestamp.month,
+                         day=timestamp.day,
+                         hour=timestamp.hour
+                         )},
+        {
+            "$push": {log["log_type"] + "_logs": log},
+            "$inc": {log["log_type"] + "_log_count": 1}
+        },
+        upsert=True
+    )
+    return result
 
 
 if __name__ == "__main__":
