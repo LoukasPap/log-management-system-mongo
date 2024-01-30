@@ -63,14 +63,10 @@ def convert_to_datehour(timestmp: str) -> str:
 
 def insert_a_log(log):
     if log["log_type"] == "access":
-
-        if log["resource"] is not None:
-            resource = log["resource"].replace(".", "_")
-
         result = collection_ref.update_one(
             filter={'referer': log["referer"]},
             update={
-                "$inc": {("resources."+resource): 1}
+                "$addToSet": {"resources": log["resource"]}
             },
             upsert=True,
         )

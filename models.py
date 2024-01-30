@@ -119,4 +119,4 @@ class Date(BaseModel):
 
 class Referer(BaseModel):
     referer: Union[str, None]
-    resources: dict
+    resources: list
