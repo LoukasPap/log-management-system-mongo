@@ -98,25 +98,6 @@ class ReceivingLog(BaseModel):
     voted_by: list
 
 
-class Date(BaseModel):
-    _id: datetime
-
-    access_logs: list[AccessLog]
-    access_log_count: int
-
-    replicate_logs: list[ReplicateLog]
-    replicate_log_count: int
-
-    served_logs: list[ServedLog]
-    served_log_count: int
-
-    received_logs: list[ReceivedLog]
-    received_log_count: int
-
-    receiving_logs: list[ReceivingLog]
-    receiving_log_count: int
-
-
 class Referer(BaseModel):
     referer: Union[str, None]
     resources: list

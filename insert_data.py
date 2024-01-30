@@ -6,7 +6,8 @@ from pymongo import MongoClient
 
 client = MongoClient("localhost", 27017)
 db = client["NoSQL-LOGS"]
-collection_dt = db["dates"]
+collection_access = db["access"]
+collection_hdfs = db["hdfs"]
 collection_ref = db["referers"]
 
 date_format_input = "%y%m%d %H%M%S"
@@ -62,15 +63,15 @@ def insert_hdfs():
                 voted_by=[]
             )
 
-            res = insert_a_log(dict(log_object))
+            insert_a_log(dict(log_object), False)
 
 
-def convert_to_datehour(timestmp: str) -> str:
-    datetime_object = datetime.strptime(timestmp, date_format_input)
+def convert_to_datehour(timestamp: str) -> str:
+    datetime_object = datetime.strptime(timestamp, date_format_input)
     return datetime_object.strftime(date_format_output)
 
 
-def insert_a_log(log):
+def insert_a_log(log, is_access: bool = True):
     if log["log_type"] == "access":
         collection_ref.update_one(
             filter={'referer': log["referer"]},
@@ -80,19 +81,11 @@ def insert_a_log(log):
             upsert=True,
         )
 
-    timestamp: datetime = log["timestamp"]
-    result = collection_dt.update_one(
-        {"_id": datetime(year=timestamp.year,
-                         month=timestamp.month,
-                         day=timestamp.day,
-                         hour=timestamp.hour
-                         )},
-        {
-            "$push": {log["log_type"] + "_logs": log},
-            "$inc": {log["log_type"] + "_log_count": 1}
-        },
-        upsert=True
-    )
+    if is_access:
+        result = collection_access.insert_one(log)
+    else:
+        result = collection_hdfs.insert_one(log)
+
     return result
 
 
