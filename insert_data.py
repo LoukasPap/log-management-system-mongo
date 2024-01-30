@@ -12,10 +12,10 @@ fsnamesystem_logs: str = "./logs/hdfs_fsnamesystem.csv"
 
 
 def main():
-    insert()
+    insert_access()
 
 
-def insert():
+def insert_access():
     access_log: AccessLog
     loop = client.get_io_loop()
 
@@ -31,7 +31,7 @@ def insert():
                 user_id=(None if row[2] == '-' else row[2]),
                 timestamp=datetime.strptime(row[3], date_format_input),
                 http_method=row[4],
-                resource=row[5],
+                resource=("None" if row[5] in ("-", " ", "") else row[5]),
                 http_response_status=row[6],
                 http_response_size=(None if row[7] == '-' else row[7]),
                 referer=(None if row[-2] == '-' else row[-2]),
@@ -43,8 +43,11 @@ def insert():
 
             # print(dict(access_log))
             tmp = insert_a_log(dict(access_log))
-            res += tmp.modified_count
-            i += 1
+            # res += tmp.modified_count
+
+            # i += 1
+            # if i > 5:
+            #     break
         print(i, res)
 
 

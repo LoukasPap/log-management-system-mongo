@@ -20,15 +20,18 @@ collection_ref = db["referers"]
 
 
 def insert_a_log(log):
-    # print(log)
-    # if log["log_type"] == "access":
-    #     collection_ref.update_one(
-    #         {'referer': log["referer"]},
-    #         {
-    #             "$push": {log["resource"]}
-    #         },
-    #         upsert=True
-    #     )
+    if log["log_type"] == "access":
+
+        if log["resource"] is not None:
+            resource = log["resource"].replace(".", "_")
+
+        result = collection_ref.update_one(
+            filter={'referer': log["referer"]},
+            update={
+                "$inc": {("resources."+resource): 1}
+            },
+            upsert=True,
+        )
 
     timestamp: datetime = log["timestamp"]
     result = collection_dt.update_one(

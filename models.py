@@ -27,7 +27,7 @@ class AccessLog(BaseModel):
     remote_name: Union[str, None]
     user_agent_string: Union[str, None]
     referer: Union[str, None]
-    resource: str
+    resource: Union[str, None]
 
     # Admin fields
     votes: int
@@ -119,4 +119,4 @@ class Date(BaseModel):
 
 class Referer(BaseModel):
     referer: Union[str, None]
-    resources: Union[list[str], None]
+    resources: dict
