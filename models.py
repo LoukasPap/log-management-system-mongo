@@ -1,6 +1,6 @@
 from datetime import datetime
+from typing import Union
 
-import pydantic
 from pydantic import BaseModel, Field
 
 
@@ -10,7 +10,7 @@ class Admin(BaseModel):
     telephone: str
     votes_count: int
     voted_logs: list
-    voted_ips: set
+    voted_ips: dict
 
 
 class AccessLog(BaseModel):
@@ -22,15 +22,16 @@ class AccessLog(BaseModel):
     # Access specific fields
     http_method: str
     http_response_status: str
-    http_response_size: int
-    remote_name: str
-    user_agent_string: str
-    referer: str
+    http_response_size: Union[str, None]
+    user_id: Union[str, None]
+    remote_name: Union[str, None]
+    user_agent_string: Union[str, None]
+    referer: Union[str, None]
     resource: str
 
     # Admin fields
     votes: int
-    voted_by: list
+    voted_by: Union[list[Admin], None]
 
 
 class ReplicateLog(BaseModel):
@@ -117,5 +118,5 @@ class Date(BaseModel):
 
 
 class Referer(BaseModel):
-    referer: str
-    resources: list[str]
+    referer: Union[str, None]
+    resources: Union[list[str], None]
