@@ -1,3 +1,4 @@
+import queries
 from models import *
 from database import (
     fetch_one_admin,
@@ -28,3 +29,27 @@ async def register_admin(admin: Admin):
     if response:
         return response
     raise HTTPException(400, "Something went wrong")
+
+
+@app.get("/api/queries/query1")
+async def execute_query1(date_start: datetime, date_end: datetime):
+    response = await queries.query1(date_start, date_end)
+    if response:
+        return response
+    raise HTTPException(404, f'No response - Query 1')
+
+
+@app.get("/api/queries/query2")
+async def execute_query2(date_start: datetime, date_end: datetime, log_type: str):
+    response = await queries.query2(date_start, date_end, log_type)
+    if response:
+        return response
+    raise HTTPException(404, f'No response - Query 2')
+
+
+@app.get("/api/queries/query3")
+async def execute_query3(date: datetime):
+    response = await queries.query3(date)
+    if response:
+        return response
+    raise HTTPException(404, f'No response - Query 3')
