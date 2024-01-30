@@ -6,9 +6,8 @@ import motor.motor_asyncio
 
 client = motor.motor_asyncio.AsyncIOMotorClient('mongodb://localhost:27017')
 database = client["NoSQL-LOGS"]
-collection_admins = database.admins
-collection_access = database["access"]
-
+collection_admins = database["admins"]
+collection_dates = database["dates"]
 
 
 async def fetch_one_admin(name):
@@ -23,9 +22,9 @@ async def create_admin(admin):
 
 
 async def insert_log(log):
-    result = await collection_access.update_one({'_id': log["timestamp"]},  # ! wrong timestamp
-                                                {'$push': {log["log_type"] + "_logs": log},
-                                                 '$inc': {log["log_type"] + "_log_count": 1}},
-                                                upsert=True)
+    result = await collection_dates.update_one({'_id': log["timestamp"]},  # ! wrong timestamp
+                                               {'$push': {log["log_type"] + "_logs": log},
+                                                '$inc': {log["log_type"] + "_log_count": 1}},
+                                               upsert=True)
 
     print(result.matched_count, result.modified_count)

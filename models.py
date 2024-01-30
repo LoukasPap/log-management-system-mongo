@@ -36,14 +36,14 @@ class AccessLog(BaseModel):
 
 class ReplicateLog(BaseModel):
     # General log fields
+
     timestamp: datetime
     ip: str
     log_type: str = Field(default="replicate")
 
     # Replicate specific fields
-    block_ids: list
-    size: int
-    destination_ip: str
+    block_ids: list[str]
+    destination_ip: list[str]
 
     # Admin fields
     votes: int

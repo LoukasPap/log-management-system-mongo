@@ -18,19 +18,18 @@ fsnamesystem_logs: str = "./logs/hdfs_fsnamesystem.csv"
 
 
 def main():
-    insert_access()
+    # insert_access()
+    insert_hdfs()
 
 
 def insert_access():
-    access_log: AccessLog
+    log_object: AccessLog
 
     with open(access_logs, "r", newline="") as csvfile:
         reader = csv.reader(csvfile, delimiter=",")
         next(reader, None)
-        i = 1
-        res = 0
         for row in reader:
-            access_log = AccessLog(
+            log_object = AccessLog(
                 ip=row[0],
                 remote_name=(None if row[1] == '-' else row[1]),
                 user_id=(None if row[2] == '-' else row[2]),
@@ -44,16 +43,26 @@ def insert_access():
                 votes=0,
                 voted_by=[]
             )
-            #
+            insert_a_log(dict(log_object))
 
-            # print(dict(access_log))
-            tmp = insert_a_log(dict(access_log))
-            # res += tmp.modified_count
 
-            # i += 1
-            # if i > 5:
-            #     break
-        print(i, res)
+def insert_hdfs():
+    log_object: ReplicateLog
+
+    with open(fsnamesystem_logs, "r", newline="") as csvfile:
+        reader = csv.reader(csvfile, delimiter=",")
+        next(reader, None)
+        for row in reader:
+            log_object = ReplicateLog(
+                timestamp=datetime.strptime(row[0], date_format_input),
+                block_ids=row[2].split(),
+                ip=row[3],
+                destination_ip=row[4].split(),
+                votes=0,
+                voted_by=[]
+            )
+
+            res = insert_a_log(dict(log_object))
 
 
 def convert_to_datehour(timestmp: str) -> str:
@@ -63,7 +72,7 @@ def convert_to_datehour(timestmp: str) -> str:
 
 def insert_a_log(log):
     if log["log_type"] == "access":
-        result = collection_ref.update_one(
+        collection_ref.update_one(
             filter={'referer': log["referer"]},
             update={
                 "$addToSet": {"resources": log["resource"]}
