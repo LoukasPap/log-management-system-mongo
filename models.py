@@ -34,64 +34,15 @@ class AccessLog(BaseModel):
     voted_by: Union[list[Admin], None]
 
 
-class ReplicateLog(BaseModel):
+class HadoopFSLog(BaseModel):
     # General log fields
-
     timestamp: datetime
     ip: str
-    log_type: str = Field(default="replicate")
+    log_type: str
 
     # Replicate specific fields
     block_ids: list[str]
     destination_ip: list[str]
-
-    # Admin fields
-    votes: int
-    voted_by: list
-
-
-class ServedLog(BaseModel):
-    # General log fields
-    timestamp: datetime
-    ip: str
-    log_type: str = Field(default="served")
-
-    # Replicate specific fields
-    block_ids: list
-    size: int
-    destination_ip: str
-
-    # Admin fields
-    votes: int
-    voted_by: list
-
-
-class ReceivedLog(BaseModel):
-    # General log fields
-    timestamp: datetime
-    ip: str
-    log_type: str = Field(default="received")
-
-    # Replicate specific fields
-    block_ids: list
-    size: int
-    destination_ip: str
-
-    # Admin fields
-    votes: int
-    voted_by: list
-
-
-class ReceivingLog(BaseModel):
-    # General log fields
-    timestamp: datetime
-    ip: str
-    log_type: str = Field(default="receiving")
-
-    # Replicate specific fields
-    block_ids: list
-    size: int
-    destination_ip: str
 
     # Admin fields
     votes: int
