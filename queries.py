@@ -255,6 +255,36 @@ async def query6():
     return parse_json(temp)
 
 
+async def query7(date):
+    date_start = datetime(year=date.year, month=date.month, day=date.day)
+    date_end = date_start + timedelta(days=1)
+
+    pipeline = [
+        {
+            "$unionWith": {
+                "coll": "hdfs_logs"
+            }
+        },
+        {
+            "$match": {
+                "timestamp": {"$gte": date_start, "$lt": date_end}
+            }
+        },
+        {
+            "$sort": {"votes": -1}
+        }
+    ]
+    cursor = access_logs.aggregate(pipeline)
+    print("query 7 aggregate done!")
+    top50 = []
+    for i in range(50):
+        temp = cursor.try_next()
+        if not temp:
+            break
+        top50.append(temp)
+    return parse_json(top50)
+
+
 async def query8():
     pipeline = [
     {
@@ -310,3 +340,26 @@ async def query9():
     return parse_json(temp)
 
 
+async def query11(username):
+    pipeline = [
+        {
+            "$unwind": "$block_ids"
+        },
+        {
+            "$project": {
+                "block_ids": 1,
+                "voted_by_given_name": {
+                    "$in": [username, {"$ifNull": ["$voted_by", []]}]
+                }
+            }
+        },
+        {
+            "$match": {
+                "voted_by_given_name": True
+            }
+        }
+    ]
+    cursor = hdfs_logs.aggregate(pipeline)
+    print("query 11 aggregate done!")
+    temp = return_some_results(cursor)
+    return parse_json(temp)

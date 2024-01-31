@@ -79,7 +79,15 @@ async def execute_query6():
     raise HTTPException(404, f'No response - Query 6')
 
 
-@app.get("/api/queries/quer8")
+@app.get("/api/queries/query7")
+async def execute_query7(date: datetime):
+    response = await queries.query7(date)
+    if response:
+        return response
+    raise HTTPException(404, f'No response - Query 7')
+
+
+@app.get("/api/queries/query8")
 async def execute_query8():
     response = await queries.query8()
     if response:
@@ -93,3 +101,11 @@ async def execute_query9():
     if response:
         return response
     raise HTTPException(404, f'No response - Query 9')
+
+
+@app.get("/api/queries/query11")
+async def execute_query11(username: str):
+    response = await queries.query11(username)
+    if response:
+        return response
+    raise HTTPException(404, f'No response - Query 11')
