@@ -11,6 +11,16 @@ def read_root():
     return {"Hello": "World"}
 
 
+@app.post("/api/upvote/")
+async def upvote(username: str, log_id: str, log_type: str):
+    response = await queries.upvote(username, log_id, log_type)
+
+    if response:
+        return response
+
+    raise HTTPException(400, "Something went wrong")
+
+
 @app.post("/api/insert_log/")
 async def insert_log(log_type: str, log: str):
     if log_type == "access":
@@ -31,7 +41,6 @@ async def insert_log(log_type: str, log: str):
         return response
 
     raise HTTPException(400, "Something went wrong")
-
 
 @app.get("/api/queries/query1")
 async def execute_query1(date_start: datetime, date_end: datetime):

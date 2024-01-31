@@ -6,6 +6,7 @@ from bson import json_util
 from pymongo import MongoClient
 
 from models import *
+from bson import ObjectId
 
 
 def parse_json(data):
@@ -434,3 +435,28 @@ async def insert_log(log_type, fields):
 
 
     return f"{log_type} log insertion done with id [{response.inserted_id}]!"
+
+
+async def upvote(username, lid, log_type):
+    collection = hdfs_logs
+    if log_type == "access":
+        collection = access_logs
+
+    doc = collection.find_one_and_update(
+        {"_id": ObjectId(lid)},
+        {
+            "$push": {"voted_by": username},
+            "$inc": {"votes": 1}
+        }
+    )
+
+    admins.find_one_and_update(
+        {"username": username},
+        {
+            "$push": {"voted_logs": lid},
+            "$addToSet": {"voted_ips": doc["ip"]},
+            "$inc": {"votes_count": 1}
+        }
+    )
+
+    return f"{username} liked log with id [{lid}]!"
