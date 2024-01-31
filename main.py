@@ -14,16 +14,8 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/api/admin/{name}", response_model=Admin)
-async def read_item(username: str):
-    response = await fetch_one_admin(username)
-    if response:
-        return response
-    raise HTTPException(404, f'There is no admin with the name {username}')
-
-
-@app.post("/api/admin/", response_model=Admin)
-async def register_admin(admin: Admin):
+@app.post("/api/insert_log/")
+async def register_admin(log_type: str):
     print(admin)
     response = await create_admin(dict(admin))
     if response:
@@ -101,6 +93,14 @@ async def execute_query9():
     if response:
         return response
     raise HTTPException(404, f'No response - Query 9')
+
+
+@app.get("/api/queries/query10")
+async def execute_query10():
+    response = await queries.query10()
+    if response:
+        return response
+    raise HTTPException(404, f'No response - Query 10')
 
 
 @app.get("/api/queries/query11")

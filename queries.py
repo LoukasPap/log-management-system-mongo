@@ -287,26 +287,21 @@ async def query7(date):
 
 async def query8():
     pipeline = [
-    {
-        '$project': {
-            'username': 1,
-            'email': 1,
-            'telephone': 1,
-            'votes_count': 1,
-            'voted_logs': 1,
-            'voted_ips': 1,
-            'total_votes': {
-                '$size': '$voted_logs'
+        {
+            '$project': {
+                'username': 1,
+                'email': 1,
+                'telephone': 1,
+                'votes_count': 1,
             }
+        }, {
+            '$sort': {
+                'votes_count': -1
+            }
+        }, {
+            '$limit': 50
         }
-    }, {
-        '$sort': {
-            'total_votes': -1
-        }
-    }, {
-        '$limit': 50
-    }
-]
+    ]
     cursor = admins.aggregate(pipeline)
     print("query 8 aggregate done!")
     temp = return_some_results(cursor)
@@ -321,8 +316,6 @@ async def query9():
                 "email": 1,
                 "telephone": 1,
                 "votes_count": 1,
-                "voted_logs": 1,
-                "voted_ips": 1,
                 "length_of_ips": {
                     "$size": "$voted_ips"
                 }
@@ -336,6 +329,45 @@ async def query9():
         }]
     cursor = admins.aggregate(pipeline)
     print("query 9 aggregate done!")
+    temp = return_some_results(cursor)
+    return parse_json(temp)
+
+
+async def query10():
+    pipeline = [
+        {
+            '$group': {
+                '_id': {
+                    'email': '$email',
+                    'logs': '$voted_logs'
+                },
+                'uniqueIds': {
+                    '$addToSet': '$_id'
+                },
+                'count': {
+                    '$sum': 1
+                }
+            }
+        }, {
+            '$group': {
+                '_id': '$_id.email',
+                'voted_logs': {
+                    '$push': '$_id.logs'
+                },
+                'total': {
+                    '$sum': '$count'
+                }
+            }
+        }, {
+            '$match': {
+                'total': {
+                    '$gte': 2
+                }
+            }
+        }
+    ]
+    cursor = admins.aggregate(pipeline)
+    print("query 10 aggregate done!")
     temp = return_some_results(cursor)
     return parse_json(temp)
 
