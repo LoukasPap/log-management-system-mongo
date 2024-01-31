@@ -77,3 +77,11 @@ async def execute_query6():
     if response:
         return response
     raise HTTPException(404, f'No response - Query 6')
+
+
+@app.get("/api/queries/query9")
+async def execute_query9():
+    response = await queries.query9()
+    if response:
+        return response
+    raise HTTPException(404, f'No response - Query 9')

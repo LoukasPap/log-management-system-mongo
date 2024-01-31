@@ -253,3 +253,30 @@ async def query6():
     print("query 6 aggregate done!")
     temp = return_some_results(cursor)
     return parse_json(temp)
+
+
+async def query9():
+    pipeline = [
+        {
+            "$project": {
+                "username": 1,
+                "email": 1,
+                "telephone": 1,
+                "votes_count": 1,
+                "voted_logs": 1,
+                "voted_ips": 1,
+                "length_of_ips": {
+                    "$size": "$voted_ips"
+                }
+            }
+        }, {
+            "$sort": {
+                "length_of_ips": -1
+            }
+        }, {
+            "$limit": 50
+        }]
+    cursor = admins.aggregate(pipeline)
+    print("query 9 aggregate done!")
+    temp = return_some_results(cursor)
+    return parse_json(temp)
