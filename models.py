@@ -7,9 +7,9 @@ class Admin(BaseModel):
     username: str
     email: str
     telephone: str
-    votes_count: int
-    voted_logs: list
-    voted_ips: dict
+    votes_count: int = Field(default=0)
+    voted_logs: list = Field(default=[])
+    voted_ips: list = Field(default=[])
 
 
 class AccessLog(BaseModel):
