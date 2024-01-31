@@ -13,6 +13,16 @@ def parse_json(data):
     return json.loads(json_util.dumps(data))
 
 
+def return_some_results(cursor):
+    temp = []
+    for i in range(100):
+        doc = cursor.try_next()
+        if not doc:
+            break
+        temp.append(doc)
+    return temp
+
+
 client = MongoClient("localhost", 27017)
 db = client["NoSQL-LOGS"]
 access_logs = db["access_logs"]
@@ -119,6 +129,9 @@ async def query3(date):
             }
         },
         {
+            "$sort": {"total": -1}
+        },
+        {
             "$project": {
                 "_id": 0,
                 "source_ip": "$_id",
@@ -128,13 +141,10 @@ async def query3(date):
         }
     ]
     cursor = access_logs.aggregate(pipeline)
-    top3 = []
-    for i in range(20):
-        temp = cursor.try_next()
-        if not temp:
-            break
-        top3.append(temp)
-    return parse_json(cursor)
+
+    print("query 3 aggregate done!")
+    temp = return_some_results(cursor)
+    return parse_json(temp)
 
 
 async def query4(date_start, date_end):
