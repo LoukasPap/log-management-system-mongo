@@ -15,10 +15,10 @@ def parse_json(data):
 
 client = MongoClient("localhost", 27017)
 db = client["NoSQL-LOGS"]
-access_logs = db["access"]
+access_logs = db["access_logs"]
 hdfs_logs = db["hdfs_logs"]
 admins = db["admins"]
-referrers = db["referrers"]
+referrers = db["referers"]
 
 
 async def query1(date_start, date_end):
@@ -97,7 +97,7 @@ async def query3(date):
         {
             "$group": {
                 "_id": {
-                    "source_ip": "$source_ip",
+                    "source_ip": "$ip",
                     "log_type": "$log_type"
                 },
                 "count": {"$sum": 1}
@@ -105,13 +105,121 @@ async def query3(date):
         },
         {
             "$sort": {"count": -1}
+        },
+        {
+            "$group": {
+                "_id": "$_id.source_ip",
+                "top_logs": {
+                    "$push": {
+                        "log_type": "$_id.log_type",
+                        "count": "$count"
+                    }
+                },
+                "total": {"$sum": "$count"}
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "source_ip": "$_id",
+                "top_logs": {"$slice": ["$top_logs", 3]},
+                "total": 1
+            }
         }
     ]
     cursor = access_logs.aggregate(pipeline)
     top3 = []
-    for i in range(2):
+    for i in range(20):
         temp = cursor.try_next()
         if not temp:
             break
         top3.append(temp)
-    return parse_json(top3)
+    return parse_json(cursor)
+
+
+async def query4(date_start, date_end):
+    pipeline = [
+        {
+            "$match": {
+                "timestamp": {"$gte": date_start, "$lte": date_end}
+            }
+        },
+        {
+            "$group": {
+                "_id": "$http_method",
+                "count": {"$sum": 1}
+            }
+        },
+        {
+            "$sort": {"count": 1}
+        }
+    ]
+    cursor = access_logs.aggregate(pipeline)
+    top2 = []
+    for i in range(2):
+        temp = cursor.try_next()
+        if not temp:
+            break
+        top2.append(temp)
+    return parse_json(top2)
+
+
+async def query5():
+    pipeline = [
+        {
+            "$project": {
+                "referer": 1,
+                "resourcesNumber": {"$size": "$resources"}
+            }
+        },
+        {
+            "$match": {
+                "$and": [
+                    {"referer": {"$ne": None}},
+                    {"resourcesNumber": {"$gte": 2}}
+                ]
+            }
+        }
+    ]
+    cursor = referrers.aggregate(pipeline)
+    return parse_json(cursor)
+
+
+async def query6():
+    pipeline = [
+        {
+            "$match": {
+                "log_type": {
+                    "$in": ["Replicate", "Served"]
+                }
+            }
+        },
+        {
+            "$group": {
+                "_id": {
+                    "block_ids": "$block_ids",
+                    "log_type": "$log_type",
+                    "timestamp": "$timestamp"
+                }
+            }
+        },
+        {
+            "$group": {
+                "_id": "$_id.block_ids",
+                "data": {
+                    "$push": {
+                        "log_type": "$_id.log_type",
+                        "timestamp": "$_id.timestamp",
+                    }
+                }
+            }
+        }
+    ]
+    cursor = hdfs_logs.aggregate(pipeline)
+    top2 = []
+    for i in range(10):
+        temp = cursor.try_next()
+        if not temp:
+            break
+        top2.append(temp)
+    return parse_json(top2)

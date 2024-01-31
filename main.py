@@ -53,3 +53,27 @@ async def execute_query3(date: datetime):
     if response:
         return response
     raise HTTPException(404, f'No response - Query 3')
+
+
+@app.get("/api/queries/query4")
+async def execute_query4(date_start: datetime, date_end: datetime):
+    response = await queries.query4(date_start, date_end)
+    if response:
+        return response
+    raise HTTPException(404, f'No response - Query 4')
+
+
+@app.get("/api/queries/query5")
+async def execute_query5():
+    response = await queries.query5()
+    if response:
+        return response
+    raise HTTPException(404, f'No response - Query 5')
+
+
+@app.get("/api/queries/query6")
+async def execute_query6():
+    response = await queries.query6()
+    if response:
+        return response
+    raise HTTPException(404, f'No response - Query 6')
