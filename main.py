@@ -1,9 +1,6 @@
 import queries
 from models import *
-from database import (
-    fetch_one_admin,
-    create_admin
-)
+from helpers import *
 from fastapi import FastAPI, HTTPException
 
 app = FastAPI()
@@ -15,11 +12,24 @@ def read_root():
 
 
 @app.post("/api/insert_log/")
-async def register_admin(log_type: str):
-    print(admin)
-    response = await create_admin(dict(admin))
+async def insert_log(log_type: str, log: str):
+    if log_type == "access":
+        result = access_to_list(log)
+    elif log_type == "dataxceiver":
+        result = dataxceiver_to_list(log)
+    elif log_type == "fsnamesystem":
+        result = fsnamesystem_to_list(log)
+    else:
+        raise HTTPException(400, "Log type does not exist")
+
+    if result == "Fail":
+        raise HTTPException(400, "Bad input or wrong log type given")
+
+    response = await queries.insert_log(log_type, result)
+
     if response:
         return response
+
     raise HTTPException(400, "Something went wrong")
 
 
