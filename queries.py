@@ -34,22 +34,26 @@ referrers = db["referers"]
 async def query1(date_start, date_end):
     pipeline = [
         {
+            # Combines the collections to get all logs
             "$unionWith": {
                 "coll": "hdfs_logs"
             }
         },
         {
+            # Gets only the logs inside the required timestamps
             "$match": {
                 "timestamp": {"$gte": date_start, "$lte": date_end}
             }
         },
         {
+            # Counts the logs per type
             "$group": {
                 "_id": "$log_type",
                 "count": {"$sum": 1}
             }
         },
         {
+            # Sorts in descending order
             "$sort": {"count": -1}
         }
     ]
@@ -65,16 +69,19 @@ async def query2(date_start, date_end, log_type):
 
     pipeline = [
         {
+            # Gets only the logs inside the required timestamps
             "$match": {
                 "timestamp": {"$gte": date_start, "$lte": date_end}
             }
         },
         {
+            # Gets only the logs of the required type
             "$match": {
                 "log_type": log_type
             }
         },
         {
+            # Groups only by the date portion of the timestamp and counts the logs
             "$group": {
                 "_id": {
                     "year": {"$year": "$timestamp"},
@@ -90,21 +97,25 @@ async def query2(date_start, date_end, log_type):
 
 
 async def query3(date):
+    # Get the single day time range
     date_start = datetime(year=date.year, month=date.month, day=date.day)
     date_end = date_start + timedelta(days=1)
 
     pipeline = [
         {
+            # Combines the collections to get all logs
             "$unionWith": {
                 "coll": "hdfs_logs"
             }
         },
         {
+            # Gets only the logs inside the required timestamps
             "$match": {
                 "timestamp": {"$gte": date_start, "$lt": date_end}
             }
         },
         {
+            # Group by ip and then log type
             "$group": {
                 "_id": {
                     "source_ip": "$ip",
@@ -117,6 +128,7 @@ async def query3(date):
             "$sort": {"count": -1}
         },
         {
+            # Group by ip by adding the counts for each log type
             "$group": {
                 "_id": "$_id.source_ip",
                 "top_logs": {
@@ -132,6 +144,7 @@ async def query3(date):
             "$sort": {"total": -1}
         },
         {
+            # Keep the top 3 log types per ip
             "$project": {
                 "_id": 0,
                 "source_ip": "$_id",
@@ -150,20 +163,24 @@ async def query3(date):
 async def query4(date_start, date_end):
     pipeline = [
         {
+            # Gets only the logs inside the required timestamps
             "$match": {
                 "timestamp": {"$gte": date_start, "$lte": date_end}
             }
         },
         {
+            # Group by http method and count the logs
             "$group": {
                 "_id": "$http_method",
                 "count": {"$sum": 1}
             }
         },
         {
+            # Sort in ascending order
             "$sort": {"count": 1}
         }
     ]
+    # Only keep the top 2 results - the less common http types
     cursor = access_logs.aggregate(pipeline)
     top2 = []
     for i in range(2):
@@ -177,12 +194,14 @@ async def query4(date_start, date_end):
 async def query5():
     pipeline = [
         {
+            # Get the referers with the size of their resource array
             "$project": {
                 "referer": 1,
                 "resourcesNumber": {"$size": "$resources"}
             }
         },
         {
+            # Get only the resources that are connected with a referrer
             "$match": {
                 "$and": [
                     {"referer": {"$ne": None}},
@@ -198,6 +217,7 @@ async def query5():
 async def query6():
     pipeline = [
         {
+            # Get only the replicate and served logs
             "$match": {
                 "$or": [
                     {"log_type": "Replicate"},
@@ -209,6 +229,7 @@ async def query6():
             "$unwind": "$block_ids"
         },
         {
+            # Keep only the relevant information with only the date portion of timestamp
             "$project": {
                 "block_ids": 1,
                 "log_type": 1,
@@ -216,6 +237,7 @@ async def query6():
             }
         },
         {
+            # Group by all the relevant fields
             "$group": {
                 "_id": {
                     "block_id": "$block_ids",
@@ -225,6 +247,7 @@ async def query6():
             }
         },
         {
+            # Then group by block_ids and dates only and combining the log types
             "$group": {
                 "_id": {
                     "block_id": "$_id.block_id",
@@ -239,11 +262,13 @@ async def query6():
             }
         },
         {
+            # And find the block ids that have been replicated and served on the same day
             "$match": {
                 "count": {"$gte": 2}
             }
         },
         {
+            # Group by block_ids in case they've been served and replicated on more than one days
             "$group": {
                 "_id": "$_id.block_id"
             }
@@ -266,14 +291,17 @@ async def query7(date):
             }
         },
         {
+            # Gets only the logs inside the required timestamps
             "$match": {
                 "timestamp": {"$gte": date_start, "$lt": date_end}
             }
         },
         {
+            # Sort in descending order by the number of votes
             "$sort": {"votes": -1}
         }
     ]
+    # Only keep the top50 results
     cursor = access_logs.aggregate(pipeline)
     print("query 7 aggregate done!")
     top50 = []
@@ -294,11 +322,15 @@ async def query8():
                 'telephone': 1,
                 'votes_count': 1,
             }
-        }, {
+        },
+        {
+            # Sort in descending order by the number of votes
             '$sort': {
                 'votes_count': -1
             }
-        }, {
+        },
+        {
+            # Only keep the top50 results
             '$limit': 50
         }
     ]
@@ -316,15 +348,18 @@ async def query9():
                 "email": 1,
                 "telephone": 1,
                 "votes_count": 1,
+                # Find how many ips has each admin voted
                 "length_of_ips": {
                     "$size": "$voted_ips"
                 }
             }
         }, {
+            # Sort by them
             "$sort": {
                 "length_of_ips": -1
             }
         }, {
+            # And keep the top 50
             "$limit": 50
         }]
     cursor = admins.aggregate(pipeline)
@@ -378,6 +413,7 @@ async def query11(username):
             "$unwind": "$block_ids"
         },
         {
+            # Find if the username that was given has voted each log
             "$project": {
                 "block_ids": 1,
                 "voted_by_given_name": {
@@ -386,6 +422,7 @@ async def query11(username):
             }
         },
         {
+            # and only keep the logs that were indeed voted
             "$match": {
                 "voted_by_given_name": True
             }
