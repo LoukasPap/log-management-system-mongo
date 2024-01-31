@@ -199,37 +199,57 @@ async def query6():
     pipeline = [
         {
             "$match": {
-                "log_type": {
-                    "$in": ["Replicate", "Served"]
+                "$or": [
+                    {"log_type": "Replicate"},
+                    {"log_type": "Served"}
+                ]
+            }
+        },
+        {
+            "$unwind": "$block_ids"
+        },
+        {
+            "$project": {
+                "block_ids": 1,
+                "log_type": 1,
+                "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}}
+            }
+        },
+        {
+            "$group": {
+                "_id": {
+                    "block_id": "$block_ids",
+                    "log_type": "$log_type",
+                    "date": "$date"
                 }
             }
         },
         {
             "$group": {
                 "_id": {
-                    "block_ids": "$block_ids",
-                    "log_type": "$log_type",
-                    "timestamp": "$timestamp"
-                }
+                    "block_id": "$_id.block_id",
+                    "date": "$_id.date"
+                },
+                "log_type": {
+                    "$push": {
+                        "log_type": "$_id.log_type"
+                    }
+                },
+                "count": {"$sum": 1}
+            }
+        },
+        {
+            "$match": {
+                "count": {"$gte": 2}
             }
         },
         {
             "$group": {
-                "_id": "$_id.block_ids",
-                "data": {
-                    "$push": {
-                        "log_type": "$_id.log_type",
-                        "timestamp": "$_id.timestamp",
-                    }
-                }
+                "_id": "$_id.block_id"
             }
         }
     ]
     cursor = hdfs_logs.aggregate(pipeline)
-    top2 = []
-    for i in range(10):
-        temp = cursor.try_next()
-        if not temp:
-            break
-        top2.append(temp)
-    return parse_json(top2)
+    print("query 6 aggregate done!")
+    temp = return_some_results(cursor)
+    return parse_json(temp)
